@@ -1,5 +1,4 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, BackgroundTasks
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import os
@@ -17,7 +16,6 @@ app = FastAPI()
 STATUS = "idle"
 
 BASE_DIR = Path(__file__).resolve().parent
-STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
 AUDIO_DIR = BASE_DIR / "Audio"
@@ -32,8 +30,6 @@ if not os.path.exists(DATA_FILE):
         writer = csv.writer(csv_file)
         writer.writerow(["presenter_name", "date", "start_time", "end_time", "file_path", "is_processed", "is_uploaded",
                          "is_deleted"])
-
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
