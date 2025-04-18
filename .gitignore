@@ -1,0 +1,13 @@
+# general development files
+.venv/
+**/__pycache__/
+**/.DS_Store
+
+# recording logs and files
+**/data.csv
+**/Audio/
+**/transcription/
+
+# ide related
+.idea/
+

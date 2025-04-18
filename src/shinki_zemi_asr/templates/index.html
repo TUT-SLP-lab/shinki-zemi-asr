@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Shinki Zemi ASR</title>
+    <script>
+        async function handleStartProcessing(filepath){
+            console.log(filepath)
+            try {
+                const response = await fetch("/start-processing", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({process_path: filepath})
+                });
+                const data = await response.json();
+
+                console.log("Success: ", data)
+            } catch (error) {
+                console.error("Error: ", error);
+            }
+        }
+
+        async function handleGetTranscript(filepath) {
+        // Show loading state
+        const resultDiv = document.getElementById("transcriptResult");
+        const button = document.getElementById("getTranscriptBtn");
+        
+        resultDiv.textContent = "Loading transcript...";
+        button.disabled = true;
+        
+        console.log("Fetching transcript for:", filepath);
+        try {
+            // Add a timestamp to prevent caching issues
+            const timestamp = new Date().getTime();
+            const response = await fetch(`/get-transcript?audio_file_path=${encodeURIComponent(filepath)}&_=${timestamp}`, {
+                method: "GET",
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log("Success: ", data);
+            
+            // Display the pretty-printed JSON in the result div
+            resultDiv.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            console.error("Error: ", error);
+            resultDiv.textContent = "Error fetching transcript: " + error.message;
+        } finally {
+            // Re-enable the button
+            button.disabled = false;
+        }
+    }
+    </script>
+</head>
+<body>
+<h1>Shinki Zemi ASR</h1>
+<h2>status: {{ status }}</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>発表者</th>
+            <th>日付</th>
+            <th>開始時間</th>
+            <th>終了時間</th>
+            <th>処理</th>
+            <th>掲載</th>
+            <th>削除</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data_content %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+            <td>{{ row[3] }}</td>
+            <td>
+                <button {% if row[5] == 'True' or status != 'idle' %}disabled{% endif %} onclick="handleStartProcessing('{{ row[4] }}')">処理開始</button>
+            </td>
+            <td>
+            <button {% if row[6] == 'True' or status != 'idle' %}disabled{% endif %} id="getTranscriptBtn" onclick="handleGetTranscript('{{ row[4] }}')">掲載</button>
+            </td>
+            <td>
+                <button {% if row[7] == 'True' or status != 'idle' %}disabled{% endif %}>削除</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="transcriptResult" style="white-space: pre-wrap; font-family: monospace; margin-top: 20px;"></div>
+
+</body>
+</html>
