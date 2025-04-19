@@ -17,6 +17,10 @@
                     },
                     body: JSON.stringify({process_path: filepath})
                 });
+
+                document.querySelector("#status-text").textContent = "processing - please refresh periodically for latest update"
+                document.querySelectorAll("button").forEach(btn => btn.disabled = true)
+                
                 const data = await response.json();
 
                 console.log("Success: ", data)
@@ -66,7 +70,7 @@
 </head>
 <body>
 <h1>Shinki Zemi ASR</h1>
-<h2>status: {{ status }}</h2>
+<h2>status: <span id="status-text">{{ status }}</span></h2>
 
 <table>
     <thead>
