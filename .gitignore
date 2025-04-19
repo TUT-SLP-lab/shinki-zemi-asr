@@ -6,7 +6,7 @@
 # recording logs and files
 **/data.csv
 **/Audio/
-**/transcription/
+**/Transcription/
 
 # ide related
 .idea/
