@@ -2,7 +2,7 @@
 ## インストール方法
 リポジトリーをクローン
 ```
-git clone https://github.com/oukoutdam/shinki_zemi_asr.git
+git clone https://github.com/TUT-SLP-lab/shinki-zemi-asr.git
 cd shinki_zemi_asr
 ```
 必要なパッケージのインストール
