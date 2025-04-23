@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 # .env から環境変数をロード
 load_dotenv()
 
-# config.py に定義があればそちらを使うか、ここでデフォルト値を定義
-BASE_URL = os.getenv("BASE_URL", "http://133.15.57.8/api")
+# 環境変数の取得
+BASE_URL = os.getenv("BASE_URL")
 COLLECTION_ID = os.getenv("ZEMI_ASR_COLLECTION_ID")
 API_TOKEN     = os.getenv("OUTLINE_API_TOKEN")
 
@@ -17,9 +17,10 @@ def get_title() -> str:
     :param filename: ファイル名 (例: "kazuma_20250427_1200_1300.json")
     :return: タイトル (例: "20250427_kazuma")
     """
-    #src/shinki_zemi_asr/Transcriptionからfilenameを取得する
     # ここでは例として、ファイル名を直接指定しています。
     filename = "kazuma_20250427_1200_1300.json"  
+    #src/shinki_zemi_asr/Transcriptionからfilenameを取得する
+    filename = 
     # 例: "kazuma_20250427_1200_1300.json"
     # ファイル名から日付と名前を抽出    
     # 例: "kazuma_20250427_1200_1300.json" -> "20250427_kazuma"
@@ -27,7 +28,7 @@ def get_title() -> str:
     return f"{name}_{date}"
 
 
-def output_to_wiki(title: str, text: str, publish: bool = True) -> dict:
+def output_to_wiki(text: str) -> dict:
     """
     Outline API を呼び出してドキュメントを作成します。
 
@@ -41,7 +42,7 @@ def output_to_wiki(title: str, text: str, publish: bool = True) -> dict:
         "title":        get_title(),
         "text":         text,
         "collectionId": COLLECTION_ID,
-        "publish":      publish
+        "publish":      True
     }
     headers = {
         "Content-Type":  "application/json",
