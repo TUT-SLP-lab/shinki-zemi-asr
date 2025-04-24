@@ -68,7 +68,7 @@ def get_title() -> str:
     """
     # src/shinki_zemi_asr/Transcriptionからfilename,dateを取得する
     info = get_latest_transcription_info() 
-    return f"{info['username']}_{info['date']}"
+    return f"{info['date']}_{info['username']}"
 
 
 def output_to_wiki(text: str) -> dict:
