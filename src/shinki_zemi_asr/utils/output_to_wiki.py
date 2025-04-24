@@ -12,20 +12,63 @@ BASE_URL = os.getenv("BASE_URL")
 COLLECTION_ID = os.getenv("ZEMI_ASR_COLLECTION_ID")
 API_TOKEN     = os.getenv("OUTLINE_API_TOKEN")
 
+import re
+from pathlib import Path
+from datetime import datetime
+
+def get_latest_transcription_info():
+    """
+    Transcription フォルダ内のファイル名規則:
+      {username}_{YYYYMMDD}_{HHMM}_{HHMM}.json
+    にマッチするファイルを検索し、
+    日付 + 開始時刻 が最も新しいファイルの
+    (ユーザ名, 日付 (YYYYMMDD), ファイル名) を返す。
+    """
+    # Transcription ディレクトリへのパスを取得
+    transcription_dir = Path(__file__).resolve().parent.parent / 'Transcription'
+
+    # ファイル名パターン
+    pattern = re.compile(
+        r'^(?P<username>[^_]+)_'      # ユーザ名 (アンダースコア以外)
+        r'(?P<date>\d{8})_'           # 日付 (YYYYMMDD)
+        r'(?P<start>\d{4})_'          # 開始時刻 (HHMM)
+        r'(?P<end>\d{4})\.json$'      # 終了時刻 (HHMM) + .json
+    )
+
+    latest_dt = None
+    latest_info = None
+
+    for file in transcription_dir.iterdir():
+        if file.suffix.lower() != '.json':
+            continue
+        m = pattern.match(file.name)
+        if not m:
+            continue
+
+        # 比較用の datetime を作成 (日付＋開始時刻)
+        dt = datetime.strptime(m.group('date') + m.group('start'), '%Y%m%d%H%M')
+
+        if latest_dt is None or dt > latest_dt:
+            latest_dt = dt
+            latest_info = {
+                'username': m.group('username'),
+                'date': m.group('date'),
+                'filename': file.name
+            }
+
+    if latest_info is None:
+        raise FileNotFoundError(f"No matching JSON files in {transcription_dir}")
+
+    return latest_info
+
 def get_title() -> str:
     """
     :param filename: ファイル名 (例: "kazuma_20250427_1200_1300.json")
     :return: タイトル (例: "20250427_kazuma")
     """
-    # ここでは例として、ファイル名を直接指定しています。
-    filename = "kazuma_20250427_1200_1300.json"  
-    #src/shinki_zemi_asr/Transcriptionからfilenameを取得する
-    filename = 
-    # 例: "kazuma_20250427_1200_1300.json"
-    # ファイル名から日付と名前を抽出    
-    # 例: "kazuma_20250427_1200_1300.json" -> "20250427_kazuma"
-    name, date = filename.split("_")[:2]
-    return f"{name}_{date}"
+    # src/shinki_zemi_asr/Transcriptionからfilename,dateを取得する
+    info = get_latest_transcription_info() 
+    return f"{info['username']}_{info['date']}"
 
 
 def output_to_wiki(text: str) -> dict:
