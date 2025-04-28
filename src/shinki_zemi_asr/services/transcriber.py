@@ -20,10 +20,10 @@ def process_audio_file(audio_file_path: str):
         converted_transcript = convert_tuple_to_list(transcript)
         
         # Save transcription to file
-        transcript_info = save_transcription(audio_file_path, converted_transcript)
+        filepath = save_transcription(audio_file_path, converted_transcript)
         
         # Output to wiki
-        output_to_wiki(converted_transcript, transcript_info)
+        output_to_wiki(converted_transcript, filepath)
 
         # Update processing status in the database
         update_processing_status(audio_file_path, True)

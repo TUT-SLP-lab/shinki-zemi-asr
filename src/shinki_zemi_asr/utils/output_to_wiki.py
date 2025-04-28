@@ -13,11 +13,12 @@ BASE_URL = os.getenv("BASE_URL")
 COLLECTION_ID = os.getenv("ZEMI_ASR_COLLECTION_ID")
 API_TOKEN     = os.getenv("OUTLINE_API_TOKEN")
 
-def get_title(filename: str) -> str:
+def get_title(filepath: str) -> str:
     """
-    :param filename: ファイル名 (例: "kazuma_20250427_1200_1300.json")
+    :param filepath: ファイル名 (例: "kazuma_20250427_1200_1300.json")
     :return: タイトル (例: "20250427_kazuma")
     """
+    filename = os.path.basename(filepath)
     pattern = re.compile(
         r'^(?P<username>[^_]+)_'      # ユーザ名 (アンダースコア以外)
         r'(?P<date>\d{8})_'           # 日付 (YYYYMMDD)
@@ -32,7 +33,7 @@ def get_title(filename: str) -> str:
     username = m.group('username')
     return f"{date}_{username}"
 
-def output_to_wiki(text: str, filename: str) -> dict:
+def output_to_wiki(text: str, filepath: str) -> dict:
     """
     Outline API を呼び出してドキュメントを作成します。
 
@@ -43,7 +44,7 @@ def output_to_wiki(text: str, filename: str) -> dict:
     """
     url = f"{BASE_URL}/documents.create"
     payload = {
-        "title":        get_title(filename),  # タイトル
+        "title":        get_title(filepath),  # タイトル
         "text":         text,
         "collectionId": COLLECTION_ID,
         "publish":      True
