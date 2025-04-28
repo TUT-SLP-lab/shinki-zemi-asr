@@ -43,9 +43,6 @@ def convert_tuple_to_list(obj):
         return {k: convert_tuple_to_list(v) for k, v in obj.items()}
     return obj
 
-from typing import Any, Dict
-
-from typing import Any, Dict
 
 def format_transcript(data: Dict[str, Any]) -> str:
     """
