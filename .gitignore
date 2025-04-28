@@ -1,5 +1,5 @@
 # general development files
-.env/
+.env
 .venv/
 **/__pycache__/
 **/.DS_Store

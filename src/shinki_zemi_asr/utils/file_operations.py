@@ -24,14 +24,14 @@ def save_transcription(audio_file_path: str, transcript_data: list) -> Path:
     
     return transcription_path
 
-def read_transcription(audio_file_path: str) -> str:
+def read_transcription(audio_file_path: str) -> dict:
     """Read transcription data from a JSON file."""
     transcript_path = TRANSCRIPTION_DIR / f"{Path(audio_file_path).stem}.json"
     
     with open(transcript_path, "r", encoding="utf-8") as f:
-        text = f.read()
-    
-    return text
+        data = json.load(f)
+   
+    return data
 
 def convert_tuple_to_list(obj):
     """Convert nested tuples to lists for JSON serialization."""
@@ -59,5 +59,5 @@ def format_transcript(data: Dict[str, Any]) -> str:
         ts = f"{mm:02d}:{ss:05.2f}"        # "mm:ss.SS" 形式
         text = chunk.get("text", "").strip()
         lines.append(f"{ts} : {text}")
-    return "\n".join(lines)
+    return "\\n".join(lines)
 
