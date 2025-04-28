@@ -23,7 +23,7 @@ def process_audio_file(audio_file_path: str):
         filepath = save_transcription(audio_file_path, converted_transcript)
         
         # Output to wiki
-        output_to_wiki(converted_transcript, filepath)
+        output_to_wiki(str(converted_transcript), str(filepath))
 
         # Update processing status in the database
         update_processing_status(audio_file_path, True)
