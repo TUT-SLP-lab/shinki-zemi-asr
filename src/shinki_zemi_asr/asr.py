@@ -21,8 +21,7 @@ class ASRModel():
                              feature_extractor=self.processor.feature_extractor,
                              torch_dtype=self.torch_dtype,
                              device=self.device,
-                             return_timestamps=True,
-                             generate_kwargs={"language": "ja"})
+                             return_timestamps=True)
 
     def transcribe(self, audio_path : str):
         result = self.pipe(audio_path)
