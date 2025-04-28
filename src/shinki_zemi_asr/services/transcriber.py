@@ -1,5 +1,5 @@
 from src.shinki_zemi_asr.asr import ASRModel
-from src.shinki_zemi_asr.utils.file_operations import convert_tuple_to_list, save_transcription
+from src.shinki_zemi_asr.utils.file_operations import convert_tuple_to_list, format_transcript, save_transcription
 from src.shinki_zemi_asr.utils.output_to_wiki import output_to_wiki
 from src.shinki_zemi_asr.database.csv_operations import update_processing_status
 from src.shinki_zemi_asr.config import AppState
@@ -18,12 +18,15 @@ def process_audio_file(audio_file_path: str):
         
         # Convert transcript data for JSON serialization
         converted_transcript = convert_tuple_to_list(transcript)
+
+        # Formatting text
+        formatted_transcript = format_transcript(converted_transcript)
         
         # Save transcription to file
-        filepath = save_transcription(audio_file_path, converted_transcript)
+        filepath = save_transcription(audio_file_path, formatted_transcript)
         
         # Output to wiki
-        output_to_wiki(str(converted_transcript), str(filepath))
+        output_to_wiki(formatted_transcript, str(filepath))
 
         # Update processing status in the database
         update_processing_status(audio_file_path, True)
