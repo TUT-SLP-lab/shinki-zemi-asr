@@ -19,15 +19,9 @@ def process_audio_file(audio_file_path: str):
         # Convert transcript data for JSON serialization
         converted_transcript = convert_tuple_to_list(transcript)
 
-        # Formatting text
-        formatted_transcript = format_transcript(converted_transcript)
-        
         # Save transcription to file
-        filepath = save_transcription(audio_file_path, formatted_transcript)
+        save_transcription(audio_file_path, converted_transcript)
         
-        # Output to wiki
-        output_to_wiki(formatted_transcript, str(filepath))
-
         # Update processing status in the database
         update_processing_status(audio_file_path, True)
         

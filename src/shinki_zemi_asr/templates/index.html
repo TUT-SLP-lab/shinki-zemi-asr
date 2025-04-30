@@ -41,7 +41,7 @@
         try {
             // Add a timestamp to prevent caching issues
             const timestamp = new Date().getTime();
-            const response = await fetch(`/get-transcript?audio_file_path=${encodeURIComponent(filepath)}&_=${timestamp}`, {
+            const response = await fetch(`/post-transcript?audio_file_path=${encodeURIComponent(filepath)}&_=${timestamp}`, {
                 method: "GET",
                 headers: {
                     'Accept': 'application/json',

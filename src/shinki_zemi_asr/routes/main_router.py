@@ -1,12 +1,15 @@
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from pathlib import Path
 
-from src.shinki_zemi_asr.config import TEMPLATES_DIR, AppState
+from src.shinki_zemi_asr.config import TEMPLATES_DIR, AppState, TRANSCRIPTION_DIR
 from src.shinki_zemi_asr.models.schemas import PathData
 from src.shinki_zemi_asr.database.csv_operations import read_data_file, add_recording_data
-from src.shinki_zemi_asr.utils.file_operations import save_uploaded_file, read_transcription
+from src.shinki_zemi_asr.utils.file_operations import save_uploaded_file, read_transcription, format_transcript
 from src.shinki_zemi_asr.services.transcriber import process_audio_file
+from src.shinki_zemi_asr.utils.output_to_wiki import output_to_wiki
+
 
 router = APIRouter()
 
@@ -82,3 +85,21 @@ async def get_transcript(audio_file_path: str):
             status_code=404,
             detail=f"Transcript for {audio_file_path} not found"
         )
+
+@router.get("/post-transcript")
+async def post_transcript(audio_file_path: str):
+    """Post transcription to Lab Wiki for processed audio file path."""
+    try:
+        transcript_text = read_transcription(audio_file_path)
+        formatted_transcript = format_transcript(transcript_text)
+
+        transcript_path = TRANSCRIPTION_DIR / f"{Path(audio_file_path).stem}.json"
+
+        output_to_wiki(formatted_transcript, str(transcript_path))
+        return formatted_transcript
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Transcript for {audio_file_path} not found"
+        )
+
