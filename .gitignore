@@ -5,6 +5,7 @@
 **/.DS_Store
 
 # recording logs and files
+database.db
 **/data.csv
 **/Audio/
 **/Transcription/

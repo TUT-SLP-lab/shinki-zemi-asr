@@ -1,33 +1,46 @@
+from fastapi import HTTPException
+
 from src.shinki_zemi_asr.asr import ASRModel
 from src.shinki_zemi_asr.utils.file_operations import convert_tuple_to_list, format_transcript, save_transcription
-from src.shinki_zemi_asr.utils.output_to_wiki import output_to_wiki
-from src.shinki_zemi_asr.database.csv_operations import update_processing_status
 from src.shinki_zemi_asr.config import AppState
+from src.shinki_zemi_asr.database import SessionLocal
+from src.shinki_zemi_asr.models.schemas import ASRRecording
 
-def process_audio_file(audio_file_path: str):
+def process_audio_file(recording_id: int):
     """Process an audio file using the ASR model and save the transcript."""
-    print(f"Processing file: {audio_file_path}")
-    
-    # Update application state
-    AppState.STATUS = "processing"
-    
-    try:
-        # Initialize ASR model and transcribe
-        asr_model = ASRModel()
-        transcript = asr_model.transcribe(audio_file_path)
-        
-        # Convert transcript data for JSON serialization
-        converted_transcript = convert_tuple_to_list(transcript)
+    with SessionLocal() as session:
+        recording = session.get(ASRRecording, recording_id)
+        if not recording:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Recording with ID {recording_id} not found"
+            )
 
-        # Save transcription to file
-        save_transcription(audio_file_path, converted_transcript)
-        
-        # Update processing status in the database
-        update_processing_status(audio_file_path, True)
-        
-        print(f"Finished processing: {audio_file_path}")
-    except Exception as e:
-        print(f"Error processing audio file: {str(e)}")
-    finally:
-        # Reset application state
-        AppState.STATUS = "idle"
+        audio_file_path = recording.file_path
+        print(f"Processing file: {audio_file_path} for presentation ID: {recording.id}")
+        AppState.STATUS = "processing"
+
+        # Update application state
+        AppState.STATUS = "processing"
+
+        try:
+            # Initialize ASR model and transcribe
+            asr_model = ASRModel()
+            transcript = asr_model.transcribe(audio_file_path)
+
+            # Convert transcript data for JSON serialization
+            converted_transcript = convert_tuple_to_list(transcript)
+
+            # Save transcription to file
+            save_transcription(audio_file_path, converted_transcript)
+
+            # Update processing status in the database
+            recording.is_processed = True
+            session.commit()
+
+            print(f"Finished processing and updated db for: {audio_file_path}")
+        except Exception as e:
+            print(f"Error processing audio file: {str(e)}")
+        finally:
+            # Reset application state
+            AppState.STATUS = "idle"

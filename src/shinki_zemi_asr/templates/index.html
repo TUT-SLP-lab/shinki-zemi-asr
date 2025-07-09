@@ -7,15 +7,15 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Shinki Zemi ASR</title>
     <script>
-        async function handleStartProcessing(filepath){
-            console.log(filepath)
+        async function handleStartProcessing(recording_id){
+            console.log(recording_id)
             try {
                 const response = await fetch("/start-processing", {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({process_path: filepath})
+                    body: JSON.stringify({recording_id: recording_id})
                 });
 
                 document.querySelector("#status-text").textContent = "processing - please refresh periodically for latest update"
@@ -29,43 +29,43 @@
             }
         }
 
-        async function handleGetTranscript(filepath) {
-        // Show loading state
-        const resultDiv = document.getElementById("transcriptResult");
-        const button = document.getElementById("getTranscriptBtn");
-        
-        resultDiv.textContent = "Loading transcript...";
-        button.disabled = true;
-        
-        console.log("Fetching transcript for:", filepath);
-        try {
-            // Add a timestamp to prevent caching issues
-            const timestamp = new Date().getTime();
-            const response = await fetch(`/post-transcript?audio_file_path=${encodeURIComponent(filepath)}&_=${timestamp}`, {
-                method: "GET",
-                headers: {
-                    'Accept': 'application/json',
-                    'Cache-Control': 'no-cache'
+        async function handleGetTranscript(recording_id) {
+            // Show loading state
+            const resultDiv = document.getElementById("transcriptResult");
+            const button = document.getElementById("getTranscriptBtn");
+            
+            resultDiv.textContent = "Loading transcript...";
+            button.disabled = true;
+            
+            console.log("Fetching transcript for:", recording_id);
+            try {
+                // Add a timestamp to prevent caching issues
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/post-transcript?recording_id=${recording_id}&_=${timestamp}`, {
+                    method: "GET",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                
+                const data = await response.json();
+                console.log("Success: ", data);
+                
+                // Display the pretty-printed JSON in the result div
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error("Error: ", error);
+                resultDiv.textContent = "Error fetching transcript: " + error.message;
+            } finally {
+                // Re-enable the button
+                button.disabled = false;
             }
-            
-            const data = await response.json();
-            console.log("Success: ", data);
-            
-            // Display the pretty-printed JSON in the result div
-            resultDiv.textContent = JSON.stringify(data, null, 2);
-        } catch (error) {
-            console.error("Error: ", error);
-            resultDiv.textContent = "Error fetching transcript: " + error.message;
-        } finally {
-            // Re-enable the button
-            button.disabled = false;
         }
-    }
     </script>
 </head>
 <body>
@@ -87,18 +87,18 @@
     <tbody>
         {% for row in data_content %}
         <tr>
-            <td>{{ row[0] }}</td>
-            <td>{{ row[1] }}</td>
-            <td>{{ row[2] }}</td>
-            <td>{{ row[3] }}</td>
+            <td>{{ row.presenter_name }}</td>
+            <td>{{ row.recording_date }}</td>
+            <td>{{ row.start_time }}</td>
+            <td>{{ row.end_time }}</td>
             <td>
-                <button {% if row[5] == 'True' or status != 'idle' %}disabled{% endif %} onclick="handleStartProcessing('{{ row[4] }}')">処理開始</button>
+                <button {% if row.is_processed == True or status != 'idle' %}disabled{% endif %} onclick="handleStartProcessing('{{ row.id }}')">処理開始</button>
             </td>
             <td>
-            <button {% if row[6] == 'True' or status != 'idle' %}disabled{% endif %} id="getTranscriptBtn" onclick="handleGetTranscript('{{ row[4] }}')">掲載</button>
+            <button {% if row.is_uploaded == True or status != 'idle' %}disabled{% endif %} id="getTranscriptBtn" onclick="handleGetTranscript('{{ row.id }}')">掲載</button>
             </td>
             <td>
-                <button {% if row[7] == 'True' or status != 'idle' %}disabled{% endif %}>削除</button>
+                <button {% if row.is_deleted == True or status != 'idle' %}disabled{% endif %}>削除</button>
             </td>
         </tr>
         {% endfor %}
